@@ -1,66 +1,52 @@
-#include <stdio.h>
-#include <stdlib.h>
-void readArrayFromFile(const char* filename, int*** array, int* rows, int* cols) {
-    FILE* file = fopen(filename, "r");
-    if (!file) {
-        perror("Не вдалося відкрити файл");
-        exit(EXIT_FAILURE);
-    }
-    fscanf(file, "%d %d", rows, cols);
-    *array = (int**)malloc(*rows * sizeof(int*));
-    for (int i = 0; i < *rows; i++) {
-        (*array)[i] = (int*)malloc(*cols * sizeof(int));
-        for (int j = 0; j < *cols; j++) {
-            fscanf(file, "%d", &((*array)[i][j]));
-        }
-    }
+#include <iostream>
+#include <fstream>
+#include <cmath>
 
-    fclose(file);
+using namespace std;
+double calculateFunction(int x, int n) {
+    return pow(x, n) + sin(x);
 }
-void processArray(int** input, int*** output, int rows, int cols) {
-    *output = (int**)malloc(rows * sizeof(int*));
-    for (int i = 0; i < rows; i++) {
-        (*output)[i] = (int*)malloc(cols * sizeof(int));
-        for (int j = 0; j < cols; j++) {
-            (*output)[i][j] = input[i][j] * 2; 
-        }
-    }
-}
-void writeArrayToFile(const char* filename, int** array, int rows, int cols) {
-    FILE* file = fopen(filename, "w");
-    if (!file) {
-        perror("Не вдалося відкрити файл");
-        exit(EXIT_FAILURE);
-    }
-
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            fprintf(file, "%d ", array[i][j]);
-            printf("%d ", array[i][j]); 
-        }
-        fprintf(file, "\n");
-        printf("\n");
-    }
-
-    fclose(file);
-}
-void freeArray(int** array, int rows) {
-    for (int i = 0; i < rows; i++) {
-        free(array[i]);
-    }
-    free(array);
-}
-
 int main() {
-    int** array, ** processedArray;
-    int rows, cols;
-    readArrayFromFile("input.txt", &array, &rows, &cols);
-    processArray(array, &processedArray, rows, cols);
-    writeArrayToFile("output.txt", processedArray, rows, cols);
-    freeArray(array, rows);
-    freeArray(processedArray, rows);
-
-    printf("Програма виконана успішно!\n");
-
+    ifstream inputFile("input.txt");
+    ofstream outputFile("output.txt");
+    if (!inputFile || !outputFile) {
+        cerr << "Помилка відкриття файлу!" << endl;
+        return 1;
+    }
+    int rows, cols, n;
+    inputFile >> rows >> cols >> n;
+    int** array1 = new int*[rows];
+    double** array2 = new double*[rows];
+    
+    for (int i = 0; i < rows; i++) {
+        array1[i] = new int[cols];
+        array2[i] = new double[cols];
+    }
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            inputFile >> array1[i][j];
+        }
+    }
+    cout << "Результати обчислення:" << endl;
+    
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            array2[i][j] = calculateFunction(array1[i][j], n);
+            printf("%.2f ", array2[i][j]);
+            outputFile << array2[i][j] << " ";
+        }
+        cout << endl;
+        outputFile << endl;
+    }
+    for (int i = 0; i < rows; i++) {
+        delete[] array1[i];
+        delete[] array2[i];
+    }
+    delete[] array1;
+    delete[] array2;
+    
+    inputFile.close();
+    outputFile.close();
+    
     return 0;
 }
